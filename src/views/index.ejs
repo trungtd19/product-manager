@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Danh sách sản phẩm</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <style>
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .product-card {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .product-card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📦 Danh sách sản phẩm</h1>
+    <a class="btn" href="/add">➕ Thêm sản phẩm</a>
+
+    <form class="controls">
+      <label>Hiển thị:
+        <select name="size" onchange="this.form.submit()">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+      </label>
+      <label>Sắp xếp:
+        <select name="sort" onchange="this.form.submit()">
+          <option value="asc">Giá tăng</option>
+          <option value="desc">Giá giảm</option>
+        </select>
+      </label>
+    </form>
+
+    <div class="product-grid">
+      <% if (products.length === 0) { %>
+        <p>Không có sản phẩm nào để hiển thị.</p>
+      <% } else { %>
+        <% products.forEach(product => { %>
+          <div class="product-card">
+            <img src="<%= product.images && product.images[0] ? product.images[0] : '/images/default.png' %>" alt="<%= product.name %>"/>
+            <h3><a href="/detail/<%= product.id %>"><%= product.name %></a></h3>
+            <p>💰 <%= (product.price / 1_000_000_000).toFixed(2) %> tỷ đồng</p>
+            <p>📐 <%= product.area %> m²</p>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+</body>
+</html>
