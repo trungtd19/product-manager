@@ -3,43 +3,42 @@ import multer from "multer";
 import fs from "fs";
 import path from "path";
 import { Product } from "../models/Product";
-import products from "../data/products.json";
+import { pool } from "../connectPostgres";
 
 const router = Router();
 
 const upload = multer({ dest: path.join(__dirname, "../../public/uploads") });
 
-const dataFile = path.join(__dirname, "../data/products.json");
-
-const saveProducts = (data: Product[]) => {
-  fs.writeFileSync(dataFile, JSON.stringify(data, null, 2));
-};
-
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    // Đọc dữ liệu từ file JSON mỗi khi route được gọi
-    const rawData = fs.readFileSync(dataFile, "utf-8");
-    const products: Product[] = JSON.parse(rawData);
-
     const page = parseInt(req.query.page as string) || 1;
     const size = parseInt(req.query.size as string) || 10;
     const sort = req.query.sort as string || "asc";
 
-    if (!Array.isArray(products)) {
-      throw new Error("Products data is not an array.");
-    }
+    const sortOrder = sort === "asc" ? "ASC" : "DESC";
 
-    let sorted: Product[] = [...products];
-    if (sort === "asc") sorted.sort((a, b) => a.price - b.price);
-    else if (sort === "desc") sorted.sort((a, b) => b.price - a.price);
+    const offset = (page - 1) * size;
 
-    const paginated = sorted.slice((page - 1) * size, page * size);
+    // Truy vấn danh sách sản phẩm
+    const productsQuery = `
+      SELECT * FROM products
+      ORDER BY price ${sortOrder}
+      LIMIT $1 OFFSET $2
+    `;
+    const productsResult = await pool.query(productsQuery, [size, offset]);
+
+    // Truy vấn tổng số sản phẩm
+    const totalQuery = "SELECT COUNT(*) AS total FROM products";
+    const totalResult = await pool.query(totalQuery);
+
+    const products = productsResult.rows;
+    const total = parseInt(totalResult.rows[0].total, 10);
 
     res.render("index", {
-      products: paginated,
+      products,
       page,
       size,
-      total: products.length,
+      total,
     });
   } catch (error) {
     console.error("Error in / route:", error);
@@ -51,48 +50,53 @@ router.get("/add", (req, res) => {
   res.render("add");
 });
 
-router.post("/add", upload.array("images"), (req, res) => {
-  const { name, price, area, description, notes } = req.body;
-  const imageFiles = req.files as Express.Multer.File[];
-  const images = imageFiles.map(file => "/uploads/" + file.filename);
-
-  const newProduct: Product = {
-    id: Date.now().toString(),
-    name,
-    price: parseFloat(price),
-    area: parseFloat(area),
-    description,
-    notes,
-    images,
-  };
-
-  // Kiểm tra xem sản phẩm có trùng ID hay không
-  const existingProduct = products.find((p: Product) => p.id === newProduct.id);
-  if (existingProduct) {
-    return res.status(400).send("Error: Product with the same ID already exists.");
-  }
-
-  const updatedProducts = [...products, newProduct];
-  saveProducts(updatedProducts);
-
-  res.redirect("/");
-});
-
-router.get("/detail/:id", (req, res) => {
-const product = products.find((p: Product) => p.id === req.params.id);
-  if (!product) return res.status(404).send("Not found");
-  res.render("detail", { product });
-});
-
-router.get("/edit/:id", (req, res) => {
+router.post("/add", upload.array("images"), async (req, res) => {
   try {
-    const rawData = fs.readFileSync(dataFile, "utf-8");
-    const products: Product[] = JSON.parse(rawData);
+    const { name, price, area, description, notes } = req.body;
+    const imageFiles = req.files as Express.Multer.File[];
+    const images = imageFiles.map(file => "/uploads/" + file.filename).join(",");
 
-    const product = products.find((p: Product) => p.id === req.params.id);
-    if (!product) {
+    const insertQuery = `
+      INSERT INTO products (name, price, area, description, notes, images)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `;
+    await pool.query(insertQuery, [name, parseFloat(price), parseFloat(area), description, notes, images]);
+
+    res.redirect("/");
+  } catch (error) {
+    console.error("Error in /add route:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+router.get("/detail/:id", async (req, res) => {
+  try {
+    const productQuery = "SELECT * FROM products WHERE id = $1";
+    const productResult = await pool.query(productQuery, [req.params.id]);
+
+    if (productResult.rows.length === 0) {
       return res.status(404).send("Product not found");
     }
+
+    const product = productResult.rows[0];
+    res.render("detail", { product });
+  } catch (error) {
+    console.error("Error in /detail/:id route:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+router.get("/edit/:id", async (req, res) => {
+  try {
+
+    const productQuery = "SELECT * FROM products WHERE id = $1";
+    const productResult = await pool.query(productQuery, [req.params.id]);
+
+    if (productResult.rows.length === 0) {
+      return res.status(404).send("Product not found");
+    }
+
+    const product = productResult.rows[0];
 
     // Chuyển đổi giá từ đồng sang tỷ đồng
     product.price = product.price / 1_000_000_000;
@@ -104,33 +108,26 @@ router.get("/edit/:id", (req, res) => {
   }
 });
 
-router.post("/edit/:id", upload.array("images"), (req, res) => {
+router.post("/edit/:id", upload.array("images"), async (req, res) => {
   try {
-    const rawData = fs.readFileSync(dataFile, "utf-8");
-    let products: Product[] = JSON.parse(rawData);
-
     const { name, price, area, description, notes } = req.body;
     const imageFiles = req.files as Express.Multer.File[];
-    const images = imageFiles.map(file => "/uploads/" + file.filename);
+    const images = imageFiles.map(file => "/uploads/" + file.filename).join(",");
 
-    const productIndex = products.findIndex((p: Product) => p.id === req.params.id);
-    if (productIndex === -1) {
-      return res.status(404).send("Product not found");
-    }
-
-    // Cập nhật sản phẩm
-    products[productIndex] = {
-      ...products[productIndex],
+    const updateQuery = `
+      UPDATE products
+      SET name = $1, price = $2, area = $3, description = $4, notes = $5, images = $6
+      WHERE id = $7
+    `;
+    await pool.query(updateQuery, [
       name,
-      price: parseFloat(price) * 1_000_000_000, // Chuyển đổi từ tỷ đồng sang đồng
-      area: parseFloat(area),
+      parseFloat(price),
+      parseFloat(area),
       description,
       notes,
-      images: images.length > 0 ? images : products[productIndex].images,
-    };
-
-    // Lưu lại file JSON
-    saveProducts(products);
+      images,
+      req.params.id,
+    ]);
 
     res.redirect("/");
   } catch (error) {
