@@ -1,0 +1,36 @@
+[
+    {
+        "id": "1747138150513",
+        "name": "Số 47B ngách 63 Ngõ 30 Phú Mỹ",
+        "price": 16700000000,
+        "area": 51,
+        "description": "6 tầng 1 tum, 10 Phòng, 1 kiosk bán hàng, ngõ 3m. Cách Lê Đức Thọ khoảng 200m",
+        "notes": "",
+        "images": [
+            "/uploads/6d1df9e0c62f47238619161f0d407f69",
+            "/uploads/794c0ff6ccadba8a3a218ef2452fd551",
+            "/uploads/25c323249aeef37ce04ca750d6252339",
+            "/uploads/37f66b1f2a64b6cb5dc08807adf3fd99",
+            "/uploads/2a4000379469dd5f6bde755fe0a1025b",
+            "/uploads/0c0369940cc846c9ee4db76766c380ae",
+            "/uploads/5c997038d9d0660a54ac69df6afc30de",
+            "/uploads/42c1b7852e4db253a75e64aa4ea1122c"
+        ]
+    },
+    {
+        "id": "1747138367224",
+        "name": "CHDV Mễ trì 53M 6T MT 8,4M",
+        "price": 15800000000,
+        "area": 53,
+        "description": "Ngõ 3 gác 15M ra ô tô tránh, 14Phòng full đồ",
+        "notes": "",
+        "images": [
+            "/uploads/c1364478fc41aa0f21b0639ccc28ac7b",
+            "/uploads/031438ebc17544690d2431c69db8b8c4",
+            "/uploads/b5270ba120a6a1dafeb068237af74dcc",
+            "/uploads/09b4401bcdae9fb1a3708a8d4eafaea3",
+            "/uploads/9e581fc758927f1543cb71344e1913c8",
+            "/uploads/fc66222f98cf70ec430d27d31c9708f4"
+        ]
+    }
+]

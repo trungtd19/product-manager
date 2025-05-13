@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES6",
-    "module": "CommonJS",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-  }
+    "target": "ES6",                          // Phiên bản JavaScript mục tiêu
+    "module": "commonjs",                     // Sử dụng module CommonJS
+    "outDir": "./build",                      // Thư mục đầu ra cho file JS
+    "rootDir": "./src",                       // Thư mục gốc chứa file TS
+    "strict": true,                           // Bật chế độ kiểm tra nghiêm ngặt
+    "esModuleInterop": true,                  // Hỗ trợ import/export ES6
+    "skipLibCheck": true,                     // Bỏ qua kiểm tra kiểu trong thư viện
+    "resolveJsonModule": true                 // Hỗ trợ import file JSON
+  },
+  "include": ["src/**/*"],                    // Bao gồm tất cả file TS trong thư mục src
+  "exclude": ["node_modules", "build"]        // Loại trừ thư mục không cần thiết
 }

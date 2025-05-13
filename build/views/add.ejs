@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Thêm sản phẩm</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>➕ Thêm sản phẩm mới</h1>
+    <form method="POST" enctype="multipart/form-data" class="product-form">
+      <input name="name" placeholder="Tên sản phẩm" required />
+      <input name="price" type="number" placeholder="Giá (VNĐ)" required />
+      <input name="area" type="number" placeholder="Diện tích (m²)" required />
+      <textarea name="description" placeholder="Mô tả"></textarea>
+      <textarea name="notes" placeholder="Ghi chú"></textarea>
+      <input type="file" name="images" multiple />
+      <button type="submit">💾 Lưu sản phẩm</button>
+    </form>
+  </div>
+</body>
+</html>

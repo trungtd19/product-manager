@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chi tiết sản phẩm</title>
+</head>
+<body>
+  <h1>Chi tiết sản phẩm</h1>
+  <div>
+    <h2><%= product.name %></h2>
+    <p>💰 Giá: <%= (product.price / 1_000_000_000).toFixed(2) %> tỷ đồng</p>
+    <p>📐 Diện tích: <%= product.area %> m²</p>
+    <p>📝 Mô tả: <%= product.description %></p>
+    <p>🗒️ Ghi chú: <%= product.notes %></p>
+    <div>
+      <h3>Hình ảnh:</h3>
+      <% if (product.images && product.images.length > 0) { %>
+        <% product.images.forEach(image => { %>
+          <img src="<%= image %>" alt="<%= product.name %>" style="max-width: 200px; margin: 10px;" />
+        <% }) %>
+      <% } else { %>
+        <p>Không có hình ảnh.</p>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Nút Edit -->
+  <a href="/edit/<%= product.id %>" class="btn">✏️ Chỉnh sửa sản phẩm</a>
+
+  <!-- Nút Quay lại -->
+  <a href="/" class="btn">⬅️ Quay lại danh sách</a>
+</body>
+</html>
