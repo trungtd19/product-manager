@@ -7,15 +7,52 @@
 <body>
   <div class="container">
     <h1>➕ Thêm sản phẩm mới</h1>
-    <form method="POST" enctype="multipart/form-data" class="product-form">
-      <input name="name" placeholder="Tên sản phẩm" required />
-      <input name="price" type="number" placeholder="Giá (VNĐ)" required />
-      <input name="area" type="number" placeholder="Diện tích (m²)" required />
-      <textarea name="description" placeholder="Mô tả"></textarea>
-      <textarea name="notes" placeholder="Ghi chú"></textarea>
-      <input type="file" name="images" multiple />
-      <button type="submit">💾 Lưu sản phẩm</button>
+    <form action="/add" method="POST" enctype="multipart/form-data">
+      <label for="name">Tên sản phẩm:</label>
+      <input type="text" id="name" name="name" required />
+
+      <label for="price">Giá (tỷ đồng):</label>
+      <input type="text" id="price" name="price" required />
+
+      <label for="area">Diện tích:</label>
+      <input type="text" id="area" name="area" required />
+
+      <label for="description">Mô tả:</label>
+      <textarea id="description" name="description" required></textarea>
+
+      <label for="notes">Ghi chú:</label>
+      <textarea id="notes" name="notes"></textarea>
+
+      <label for="images">Hình ảnh:</label>
+      <input type="file" id="images" name="images" multiple />
+
+      <button type="submit">Thêm sản phẩm</button>
     </form>
   </div>
+  <script>
+    document.querySelector("form").addEventListener("submit", function (e) {
+      const priceInput = document.getElementById("price");
+      const areaInput = document.getElementById("area");
+      const priceValue = priceInput.value.trim();
+      const areaValue = areaInput.value.trim();
+
+      // Kiểm tra giá trị của trường price
+      if (!/^\d+(\.\d{1,2})?$/.test(priceValue)) {
+        e.preventDefault(); // Ngăn form gửi đi
+        alert("Vui lòng nhập giá hợp lệ (số nguyên hoặc số thập phân, tối đa 2 chữ số thập phân).");
+        priceInput.focus();
+        return;
+      }
+
+      // Kiểm tra giá trị của trường area
+      if (!/^\d+(\.\d{1,2})?$/.test(areaValue)) {
+        e.preventDefault(); // Ngăn form gửi đi
+        alert("Vui lòng nhập diện tích hợp lệ (số nguyên hoặc số thập phân, tối đa 2 chữ số thập phân).");
+        areaInput.focus();
+        return;
+      }
+    });
+  </script>
 </body>
 </html>
+
