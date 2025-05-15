@@ -47,12 +47,21 @@ router.post("/add", upload.array("images"), async (req, res) => {
     try {
         const { name, price, area, description, notes } = req.body;
         const imageFiles = req.files;
-        const images = imageFiles.map(file => "/uploads/" + file.filename).join(",");
+        const images = (imageFiles ?? []).map((file) => "/uploads/" + file.filename);
+        // Chuyển đổi giá từ tỷ đồng sang đồng
+        const priceInVND = parseFloat(price) * 1000000000;
         const insertQuery = `
       INSERT INTO products (name, price, area, description, notes, images)
       VALUES ($1, $2, $3, $4, $5, $6)
     `;
-        await connectPostgres_1.pool.query(insertQuery, [name, parseFloat(price), parseFloat(area), description, notes, images]);
+        await connectPostgres_1.pool.query(insertQuery, [
+            name,
+            priceInVND,
+            parseFloat(area),
+            description,
+            notes,
+            images,
+        ]);
         res.redirect("/");
     }
     catch (error) {
@@ -96,7 +105,18 @@ router.post("/edit/:id", upload.array("images"), async (req, res) => {
     try {
         const { name, price, area, description, notes } = req.body;
         const imageFiles = req.files;
-        const images = imageFiles.map(file => "/uploads/" + file.filename).join(",");
+        let images;
+        if (Array.isArray(imageFiles) && imageFiles.length > 0) {
+            images = (imageFiles ?? []).map((file) => "/uploads/" + file.filename);
+        }
+        else {
+            // Lấy danh sách ảnh cũ từ cơ sở dữ liệu
+            const productQuery = "SELECT images FROM products WHERE id = $1";
+            const productResult = await connectPostgres_1.pool.query(productQuery, [req.params.id]);
+            images = productResult.rows[0].images;
+        }
+        // Chuyển đổi giá từ tỷ đồng sang đồng
+        const priceInVND = parseFloat(price) * 1000000000;
         const updateQuery = `
       UPDATE products
       SET name = $1, price = $2, area = $3, description = $4, notes = $5, images = $6
@@ -104,7 +124,7 @@ router.post("/edit/:id", upload.array("images"), async (req, res) => {
     `;
         await connectPostgres_1.pool.query(updateQuery, [
             name,
-            parseFloat(price),
+            priceInVND,
             parseFloat(area),
             description,
             notes,

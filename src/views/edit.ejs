@@ -91,7 +91,18 @@
     <label for="notes">Ghi chú:</label>
     <textarea id="notes" name="notes"><%= product.notes %></textarea>
 
-    <label for="images">Hình ảnh:</label>
+    <label for="images">Hình ảnh hiện tại:</label>
+    <div>
+      <% if (product.images && product.images.length > 0) { %>
+        <% product.images.forEach(function(image) { %>
+          <img src="<%= image %>" alt="Product Image" style="max-width: 100px; margin-right: 10px;" />
+        <% }); %>
+      <% } else { %>
+        <p>Không có hình ảnh nào.</p>
+      <% } %>
+    </div>
+
+    <label for="images">Thay đổi hình ảnh:</label>
     <input type="file" id="images" name="images" multiple />
 
     <button type="submit">Lưu thay đổi</button>

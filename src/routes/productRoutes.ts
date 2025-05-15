@@ -53,14 +53,24 @@ router.get("/add", (req, res) => {
 router.post("/add", upload.array("images"), async (req, res) => {
   try {
     const { name, price, area, description, notes } = req.body;
-    const imageFiles = req.files as Express.Multer.File[];
-    const images = imageFiles.map(file => "/uploads/" + file.filename).join(",");
+    const imageFiles = req.files;
+    const images = ((imageFiles as Express.Multer.File[]) ?? []).map((file: { filename: string }) => "/uploads/" + file.filename);
+
+    // Chuyển đổi giá từ tỷ đồng sang đồng
+    const priceInVND = parseFloat(price) * 1_000_000_000;
 
     const insertQuery = `
       INSERT INTO products (name, price, area, description, notes, images)
       VALUES ($1, $2, $3, $4, $5, $6)
     `;
-    await pool.query(insertQuery, [name, parseFloat(price), parseFloat(area), description, notes, images]);
+    await pool.query(insertQuery, [
+      name,
+      priceInVND, // Giá tiền đã chuyển đổi
+      parseFloat(area),
+      description,
+      notes,
+      images,
+    ]);
 
     res.redirect("/");
   } catch (error) {
@@ -88,7 +98,6 @@ router.get("/detail/:id", async (req, res) => {
 
 router.get("/edit/:id", async (req, res) => {
   try {
-
     const productQuery = "SELECT * FROM products WHERE id = $1";
     const productResult = await pool.query(productQuery, [req.params.id]);
 
@@ -111,8 +120,21 @@ router.get("/edit/:id", async (req, res) => {
 router.post("/edit/:id", upload.array("images"), async (req, res) => {
   try {
     const { name, price, area, description, notes } = req.body;
-    const imageFiles = req.files as Express.Multer.File[];
-    const images = imageFiles.map(file => "/uploads/" + file.filename).join(",");
+    const imageFiles = req.files;
+    let images;
+
+   if (Array.isArray(imageFiles) && imageFiles.length > 0) {
+     images = ((imageFiles as Express.Multer.File[]) ?? []).map((file: { filename: string }) => "/uploads/" + file.filename);
+    } else {
+      // Lấy danh sách ảnh cũ từ cơ sở dữ liệu
+      const productQuery = "SELECT images FROM products WHERE id = $1";
+      const productResult = await pool.query(productQuery, [req.params.id]);
+      images = productResult.rows[0].images;
+    }
+
+
+    // Chuyển đổi giá từ tỷ đồng sang đồng
+    const priceInVND = parseFloat(price) * 1_000_000_000;
 
     const updateQuery = `
       UPDATE products
@@ -121,7 +143,7 @@ router.post("/edit/:id", upload.array("images"), async (req, res) => {
     `;
     await pool.query(updateQuery, [
       name,
-      parseFloat(price),
+      priceInVND, // Giá tiền đã chuyển đổi
       parseFloat(area),
       description,
       notes,
