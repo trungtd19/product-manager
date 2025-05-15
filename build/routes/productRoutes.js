@@ -47,7 +47,9 @@ router.post("/add", upload.array("images"), async (req, res) => {
     try {
         const { name, price, area, description, notes } = req.body;
         const imageFiles = req.files;
-        const images = imageFiles.map(file => "/uploads/" + file.filename).join(",");
+        const images = imageFiles.length > 0
+            ? imageFiles.map(file => "/uploads/" + file.filename)
+            : [];
         const insertQuery = `
       INSERT INTO products (name, price, area, description, notes, images)
       VALUES ($1, $2, $3, $4, $5, $6)
@@ -96,7 +98,10 @@ router.post("/edit/:id", upload.array("images"), async (req, res) => {
     try {
         const { name, price, area, description, notes } = req.body;
         const imageFiles = req.files;
-        const images = imageFiles.map(file => "/uploads/" + file.filename).join(",");
+        const images = imageFiles.length > 0
+            ? imageFiles.map(file => "/uploads/" + file.filename)
+            : [];
+
         const updateQuery = `
       UPDATE products
       SET name = $1, price = $2, area = $3, description = $4, notes = $5, images = $6
@@ -111,6 +116,7 @@ router.post("/edit/:id", upload.array("images"), async (req, res) => {
             images,
             req.params.id,
         ]);
+
         res.redirect("/");
     }
     catch (error) {
